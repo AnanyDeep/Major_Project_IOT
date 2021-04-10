@@ -5,21 +5,38 @@ import firebase from "firebase";
 import Firebase from "./screens/Firebase";
 
 export default function App() {
-  const [status, setStatus] = useState([0]);
-  const [Hum, setHum] = useState(0);
+  const [status, setStatus] = useState();
+  const [btn, setBtn] = useState(false);
 
-  // const [temp, setTemp] = useState([0]);
+  const [temp, setTemp] = useState([]);
 
   useEffect(() => {
-    const myitems = firebase.database().ref("Humidity");
-    myitems.on("value", (datasnap) => {
-      setStatus(Object.values(datasnap.val()));
-      setHum(status[0]);
+    mins();
+    const myitems = firebase.database().ref("Connectivity");
+    myitems.on("value", (snapshot) => {
+      setStatus(Object.values(snapshot.val()));
+      // setHum(status[0]);
       // setTemp(Object.values(datasnap.val()));
-      console.log(Object.values(datasnap.val()));
+      console.log(Object.values(snapshot.val()));
       // console.log(status);
     });
-  });
+  }, []);
+
+  const Check = () => {
+    mins();
+    if (status == 0) {
+      alert("Not Connected");
+    } else {
+      alert("Connected");
+      setBtn(false);
+    }
+  };
+  const off = () => {
+    firebase.database().ref().update({
+      Connectivity: 0,
+    });
+    setBtn(true);
+  };
 
   const plus = () => {
     firebase.database().ref().update({
@@ -33,27 +50,27 @@ export default function App() {
     });
   };
 
+  const mins = () => {
+    firebase.database().ref().update({
+      Connectivity: 0,
+    });
+  };
+
   return (
     <View style={styles.container}>
-      {!status ? (
-        <Text>No data</Text>
-      ) : (
-        <View>
-          {/* <Text>{status[0]}</Text> */}
-          <Text>{Hum}</Text>
-          {/* <Text>{temp[0]}</Text> */}
-        </View>
-      )}
+      <Text>{temp}</Text>
       <View style={styles.btn}>
-        <TouchableOpacity onPress={() => plus()}>
+        <TouchableOpacity onPress={() => plus()} disabled={btn}>
           <Text style={styles.txt}>HIGH</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.btn}>
-        <TouchableOpacity onPress={() => minus()}>
+        <TouchableOpacity onPress={() => minus()} disabled={btn}>
           <Text style={styles.txt}>LOW</Text>
         </TouchableOpacity>
       </View>
+      <Button title="Show Status" onPress={() => Check()} />
+      <Button title="Turn Off" onPress={() => off()} />
       <StatusBar style="auto" />
     </View>
   );
